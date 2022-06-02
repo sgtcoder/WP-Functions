@@ -13,7 +13,7 @@ if(!function_exists('ascii_only')){
 }
 
 if(!function_exists('bulk_insert')){
-    function bulk_insert($table, $array, $ascii_only=true){	
+    function bulk_insert($table, $array, $ascii_only=true){
 		global $wpdb;
 
 		$query = "INSERT INTO ".$wpdb->prefix.$table." (".implode(',', array_keys(reset($array))).") VALUES ";
@@ -32,7 +32,7 @@ if(!function_exists('bulk_insert')){
 	    }
 
 	    $query .= implode(',', $array_values);
-	    
+
 	    $wpdb->query($query);
 	}
 }
@@ -142,8 +142,9 @@ if(!function_exists('query_builder')){
 	            if($value=="") {
 	                $value = "NULL";
 	            }else{
-	                $value = "'".$value."'";
+	                $value = '"'.esc_sql($value).'"';
 	            }
+
 	            $query_array[] = $field."=".$value;
 	        }
 	    }
@@ -155,14 +156,14 @@ if(!function_exists('query_builder')){
 	    }
 
 	    $the_query = $action.' '.$table.' SET '.$query_array.$where;
-	    
+
 	    //echo $the_query;exit;
-	    
+
 	    $data_return['data']['query'] = $the_query;
 
 	    if($execute){
 	        $query_result = $wpdb->query($the_query);
-	   
+
 	        $data_return['data']['id'] = $wpdb->insert_id;
 
 	        if(!empty($update_field)){
@@ -174,7 +175,7 @@ if(!function_exists('query_builder')){
 
 	    $data_return['status'] = true;
 	    $data_return['message'] = "Updated Successfully";
-	    
+
 	    return $data_return;
 	}
 }
@@ -195,11 +196,11 @@ if(!function_exists('log_sync_error')){
     function log_sync_error($type, $message){
 	    // UTC Time
         date_default_timezone_set('UTC');
-	    
+
 	    global $wpdb;
 
 	    $query = "
-		    INSERT INTO 
+		    INSERT INTO
 			    ".$wpdb->prefix."error_log
 		    SET
 			    type='".$type."',
@@ -233,7 +234,7 @@ if(!function_exists('dd')){
 }
 
 if(!function_exists('convertDateTimeLocal')){
-    function convertDateTimeLocal($datetime, $timezone=""){	
+    function convertDateTimeLocal($datetime, $timezone=""){
 	    if(empty($datetime)) return $datetime;
 	   	if(empty($timezone)) $timezone = get_option('timezone_string');
 
@@ -252,7 +253,7 @@ if(!function_exists('convertDateTimeUTC')){
     function convertDateTimeUTC($datetime, $timezone=""){
 	    if(empty($datetime)) return $datetime;
 	    if(empty($timezone)) $timezone = get_option('timezone_string');
-	    
+
 	    date_default_timezone_set($timezone);
 
 	    $datetime = new DateTime($datetime);
@@ -298,7 +299,7 @@ if(!function_exists('updateCronMeta')){
 	        $update_query = build_the_query($value);
 
 	        $insert_query = build_the_query($insert_array);
-	        if(!empty($insert_query)) $insert_query = ",".$insert_query; 
+	        if(!empty($insert_query)) $insert_query = ",".$insert_query;
 
 	        $query = "INSERT INTO
 	                    ".$table."
@@ -353,9 +354,9 @@ if(!function_exists('getStatusCode')){
 if(!function_exists('validStatusCode')){
     function validStatusCode($url, $valid_codes=array(200, 301, 302)){
         $http_code = getStatusCode($url);
-        
+
         if(in_array($http_code, $valid_codes)){
-            return true;        
+            return true;
         } else {
             return false;
         }
@@ -398,5 +399,83 @@ if(!function_exists('array_map_assoc')){
 			$rv[$key] = $val;
 		}
 		return $rv;
+	}
+}
+
+if(!function_exists('get_content')){
+	function get_content($url){
+	    $response = wp_remote_get($url,
+	        array(
+	            'timeout' => 2,
+	        )
+	    );
+
+	    if(is_array($response) && !is_wp_error($response)){
+	        return $response['body'];
+	    }else{
+	        return '';
+	    }
+	}
+}
+
+if(!function_exists('save_content')){
+	function save_content($url, $path){
+	    if(is_array($response) && !is_wp_error($response) && $response['body']){
+	        file_put_contents($path, $response['body']);
+
+	        return true;
+	    }else{
+	        return false;
+	    }
+	}
+}
+
+if(!function_exists('get_timezone_string')){
+	function get_timezone_string(){
+	   	$timezone = get_option('timezone_string');
+	    $datetime = new DateTime(date('Y-m-d'));
+	    $timezone = new DateTimeZone($timezone);
+
+	    $datetime->setTimezone($timezone);
+
+	    $datetime = $datetime->format('T');
+
+	    return $datetime;
+	}
+}
+
+if(!function_exists('request')){
+	function request($param){
+		return $_GET[$param]??$_POST[$param]??NULL;
+	}
+}
+
+if(!function_exists('stripslashes_array')){
+	function stripslashes_array($array, $htmlentities=false){
+		// Check if the parameter is an array
+		if(is_array($array)) {
+			// Loop through the initial dimension
+			foreach($array as $key => $value) {
+				// Check if any nodes are arrays themselves
+				if(is_array($array[$key]))
+					// If they are, let the function call itself over that particular node
+					$array[$key] = stripslashes_array($array[$key]);
+
+				// Check if the nodes are strings
+				if(is_string($array[$key]))
+					// If they are, perform the real escape function over the selected node
+					$array[$key] = stripslashes($array[$key]);
+					if($htmlentities) $array[$key] = htmlentities($array[$key]);
+			}
+		}
+		// Check if the parameter is a string
+		if(is_string($array))
+			// If it is, perform a  mysql_real_escape_string on the parameter
+			$array = stripslashes($array);
+			if($htmlentities) $array[$key] = htmlentities($array[$key]);
+
+		// Return the filtered result
+
+		return $array;
 	}
 }

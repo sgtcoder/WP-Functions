@@ -34,6 +34,9 @@ Distributed under the GNU GENERAL PUBLIC LICENSE Version 3. See ``LICENSE`` for 
 
 [https://github.com/sgtcoder/WP-Functions](https://github.com/sgtcoder/WP-Functions)
 
+## Added Features
+- Ability to disable functions as comma seperated: `define('WP_DISABLED_FUNCTIONS', 'request,remove_emoji');`
+
 ## Contributing
 
 1. Fork it (<https://github.com/sgtcoder/WP-Functions/fork>)

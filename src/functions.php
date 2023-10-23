@@ -261,6 +261,8 @@ if (sgtcoder_is_valid_function('dd')) {
 	function dd($array)
 	{
 		print_r2($array);
+
+		exit;
 	}
 }
 

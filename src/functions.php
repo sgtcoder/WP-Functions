@@ -260,7 +260,9 @@ if (sgtcoder_is_valid_function('print_r2')) {
 if (sgtcoder_is_valid_function('dd')) {
 	function dd($array)
 	{
-		print_r2($array);
+		echo '<pre>';
+		print_r($array);
+		echo '</pre>';
 
 		exit;
 	}
